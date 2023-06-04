@@ -27,6 +27,11 @@ function [] = generate_diss_profiles(pFile, saveDir, varargin)
 %        overwrite : [true, false], optional
 %            Choose whether to overwrite existing profiles. Default is
 %            false.
+%        revert_to_defalt_gps [true, false], optional
+%            If false, an error will be thrown if the GPS time series does 
+%            not cover all the profile times. If true, the error is reduced 
+%            to a warning. Default is false.
+%
 % gps : struct, optional 
 %     Structure containing the `lon` and `lat`. Optionally is may contain 
 %     the field time. Time must be in matlab datenum type and the same 
@@ -36,6 +41,9 @@ function [] = generate_diss_profiles(pFile, saveDir, varargin)
 %
 % First created by Jesse Cusack (jesse.cusack@oregonstate.edu) 2023-06-02.
 
+lon_default = -45;
+lat_default = 45;
+
 % Parse arguments
 iP = inputParser;
 iP.StructExpand = false;
@@ -43,14 +51,24 @@ validText = @(x) isstring(x) || ischar(x);
 addRequired(iP,'pFile', validText);
 addRequired(iP,'saveDir', validText);
 addParameter(iP,'info', get_info(), @isstruct);
-addParameter(iP, 'gps', struct('lon', -45, 'lat', 45, 'default', true), @isstruct)
+addParameter(iP, 'gps', struct('lon', lon_default, 'lat', lat_default, 'default', true), @isstruct)
 parse(iP, pFile, saveDir, varargin{:}); 
 pFile = iP.Results.pFile;
 saveDir = iP.Results.saveDir;
 info = iP.Results.info;
 gps = iP.Results.gps;
 
+fprintf("\nP file: %s\n", pFile)
+
 [pPath, name, ~] = fileparts(pFile);
+% Check if the directory exists
+savePath = fullfile(saveDir, name);
+if exist(savePath, "dir")
+    if (length(dir(fullfile(savePath, "profile_*.mat"))) > 1) && ~info.overwrite
+        error("Save path (%s) exists and contains profiles. Overwrite is false.", savePath)
+    end
+end
+
 matFile = fullfile(pPath, strcat(name, ".mat"));
 
 p = odas_p2mat(pFile);
@@ -68,12 +86,15 @@ profileIdx = get_profile(p.P_fast, p.W_fast, info.pMin, info.wMin, ...
     'down', info.minDuration, p.fs_fast);
 nProfiles = size(profileIdx, 2);
 
+if nProfiles < 1
+    error("No profiles detected.")
+end
+
 profileIdxSlow = zeros(size(profileIdx));
 for i = 1:nProfiles
     i1 = profileIdx(1, i);
     i2 = profileIdx(2, i);
 %     ii = i1 + find_impact(p.t_fast(i1:i2), p.P_fast(i1:i2), p.Ax(i1:i2), p.Ay(i1:i2), lat, 0.1, 200, 21);
-
     profileIdxSlow(1, i) = find(p.t_slow > p.t_fast(i1), 1, 'first');
     profileIdxSlow(2, i) = find(p.t_slow < p.t_fast(i2), 1, 'last');
 end
@@ -83,8 +104,18 @@ time_end = p.filetime + p.t_slow(profileIdxSlow(2, :))/86400;
 
 % Check GPS
 [default_gps, interp_gps] = check_gps(gps);
+gps_overlap = true(nProfiles, 1);
 if interp_gps
     gps = clean_gps(gps);
+    gps_overlap = (gps.time(1) < time_start) & (gps.time(end) > time_start);
+    msg = sprintf("GPS times overlaps with %i of %i profiles.", sum(gps_overlap), nProfiles);
+    if ~all(gps_overlap) && info.revert_to_default_gps
+        warning(msg)
+    elseif ~all(gps_overlap) && ~info.revert_to_default_gps
+        error(msg)
+    else
+        fprintf(strcat(msg, "\n"))
+    end
 end
 
 fprintf("\nCalculating dissipation with the following parameters:\n")
@@ -92,7 +123,6 @@ disp(info)
 
 % Create save directory
 mkdir(saveDir, name)
-savePath = fullfile(saveDir, name);
 fprintf("\nSaving profiles to %s\n", savePath)
 
 % Put in info variables
@@ -104,10 +134,10 @@ for idx = 1:nProfiles
 
     saveName = sprintf("profile_%03d.mat", idx);
     saveFullFile = fullfile(savePath, saveName);
-    if exist(saveFullFile, "file") && ~info.overwrite
-        fprintf("%s already exists, skipping.\n", saveName)
-        continue
-    end
+%     if exist(saveFullFile, "file") && ~info.overwrite
+%         fprintf("%s already exists, skipping.\n", saveName)
+%         continue
+%     end
 
     pfl = struct;
     pfl.sn = sn;
@@ -129,21 +159,23 @@ for idx = 1:nProfiles
     pfl.time_end = time_end(idx);
     
     % attach GPS
-    if interp_gps
+    if interp_gps && gps_overlap(idx)
         lon = interp1(gps.time, gps.lon, pfl.time_start);
         lat = interp1(gps.time, gps.lat, pfl.time_start);
         pfl.lon = lon;
         pfl.lat = lat;
-    elseif ~default_gps
+    elseif (interp_gps && ~gps_overlap(idx)) || default_gps
+        fprintf("Using default GPS coordinates (Lon, Lat) = (%i, %i).\n", ...
+            lon_default, lat_default)
+        lon = lon_default;
+        lat = lat_default;
+        pfl.lon = NaN;
+        pfl.lat = NaN;
+    elseif ~interp_gps && ~default_gps
         lon = gps.lon;
         lat = gps.lat;
         pfl.lon = lon;
         pfl.lat = lat;
-    elseif default_gps
-        lon = gps.lon;
-        lat = gps.lat;
-        pfl.lon = NaN;
-        pfl.lat = NaN;
     end
 
     % DESPIKE
