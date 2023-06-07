@@ -21,7 +21,7 @@ overwrite = iP.Results.overwrite;
 ncFile = fullfile(path, strcat(name, ".nc"));
 
 if exist(ncFile, "file") && ~overwrite
-    error("%s exists, stopping.", ncFile)
+    error("%s exists and overwrite is false.", ncFile)
 else
     bd = load(binnedFile);
     delete(ncFile)
