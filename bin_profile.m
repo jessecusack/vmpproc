@@ -41,6 +41,7 @@ bp = struct();
 bp.z = 0.5*(zbins(1:end-1) + zbins(2:end));  % mid point of bins
 nz = length(zbins) - 1;
 SZ = [nz, 1];
+bp.depth = -bp.z;
 
 % Unbinned quantities
 bp.sn = pfl.sn;
@@ -57,6 +58,8 @@ use_diss = (pfl.z_diss > zmin) & (pfl.z_diss < zmax);
 ib_slow = discretize(pfl.z_slow(use_slow), zbins);
 ib_diss = discretize(pfl.z_diss(use_diss), zbins);
 
+bp.p = accumarray(ib_slow, pfl.P_slow(use_slow), SZ, @mean, NaN);
+bp.C = accumarray(ib_slow, pfl.C(use_slow), SZ, @mean, NaN);
 bp.T = accumarray(ib_slow, pfl.T(use_slow), SZ, @mean, NaN);
 bp.SP = accumarray(ib_slow, pfl.SP(use_slow), SZ, @mean, NaN);
 bp.CT = accumarray(ib_slow, pfl.CT(use_slow), SZ, @mean, NaN);

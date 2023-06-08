@@ -25,5 +25,17 @@ info = get_info();
 info.overwrite = false;
 info.pMin = 1;
 info.diss_length = 1024;
+info.fft_length = 512;
 generate_diss_profiles(pFile, saveDir, info=info);
 ```
+
+GPS information may also be included when generating profile. This must take
+the form of a struct with the fields `lon`, `lat`, and optionally, `time`. E.g.
+
+
+```matlab
+generate_diss_profiles(pFile, saveDir, info=info, gps=gps);
+```
+
+If no GPS data is provided then default longitude and latitude are used in
+the thermodynamic calculations. 

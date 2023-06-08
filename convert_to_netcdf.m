@@ -34,10 +34,14 @@ nt = length(bd.time_start);
 nccreate(ncFile, "z", "Dimensions", {"z" nz}, "Datatype", "single");
 nccreate(ncFile, "time", "Dimensions", {"time" nt})
 % Create data variables
+nccreate(ncFile, "depth", "Dimensions", {"z" nz}, "Datatype", "single");
 nccreate(ncFile, "sn", "Dimensions", {"time" nt}, "Datatype", "int16")
 nccreate(ncFile, "lon", "Dimensions", {"time" nt})
 nccreate(ncFile, "lat", "Dimensions", {"time" nt})
 nccreate(ncFile, "cast", "Dimensions", {"time" nt}, "Datatype", "int16")
+
+nccreate(ncFile, "p", "Dimensions", {"z" nz "time" nt}, "Datatype", "single");
+nccreate(ncFile, "C", "Dimensions", {"z" nz "time" nt})
 nccreate(ncFile, "T", "Dimensions", {"z" nz "time" nt})
 nccreate(ncFile, "SP", "Dimensions", {"z" nz "time" nt})
 nccreate(ncFile, "CT", "Dimensions", {"z" nz "time" nt})
@@ -50,10 +54,14 @@ nccreate(ncFile, "eps2", "Dimensions", {"z" nz "time" nt})
 ncwrite(ncFile, "z", bd.z);
 ncwrite(ncFile, "time", (bd.time_start - datenum("1970-01-01"))*86400);  % Convert to posix time
 % Write data variables
+ncwrite(ncFile, "depth", -bd.z);
 ncwrite(ncFile, "sn", bd.sn);
 ncwrite(ncFile, "cast", bd.cast);
 ncwrite(ncFile, "lon", bd.lon);
 ncwrite(ncFile, "lat", bd.lat);
+
+ncwrite(ncFile, "p", bd.p);
+ncwrite(ncFile, "C", bd.C);
 ncwrite(ncFile, "T", bd.T);
 ncwrite(ncFile, "SP", bd.SP);
 ncwrite(ncFile, "CT", bd.CT);
@@ -63,14 +71,17 @@ ncwrite(ncFile, "eps1", bd.eps1);
 ncwrite(ncFile, "eps2", bd.eps2);
 
 % Write attributes
-addatt(ncFile, "z", "height", "Height", "m")
-ncwriteatt(ncFile, "z", "positive", "up")
+addatt(ncFile, "z", "height", "Height", "m", "up")
 addatt(ncFile, "time", "time", "Time", "seconds since 1970-01-01")
+addatt(ncFile, "depth", "depth", "Depth", "m", "down")
 ncwriteatt(ncFile, "sn", "long_name", "Serial number")
 ncwriteatt(ncFile, "cast", "long_name", "Cast number")
 addatt(ncFile, "lon", "longitude", "Longitude", "degree_east")
 addatt(ncFile, "lat", "latitude", "Latitude", "degree_north")
+
+addatt(ncFile, "p", "sea_water_pressure", "Pressure", "dbar", "down")
 addatt(ncFile, "T", "sea_water_temperature", "Temperature", "degree_C")
+addatt(ncFile, "C", "sea_water_conductivity", "Conductivity", "mS cm-1")
 addatt(ncFile, "SP", "sea_water_practical_salinity", "Practical salinity", "")
 addatt(ncFile, "CT", "sea_water_conservative_temperature", "Conservative temperature", "degree_C")
 addatt(ncFile, "SA", "sea_water_absolute_salinity", "Absolute salinity", "g kg-1")
@@ -80,11 +91,11 @@ addatt(ncFile, "eps1", "specific_turbulent_kinetic_energy_dissipation_in_sea_wat
 addatt(ncFile, "eps2", "specific_turbulent_kinetic_energy_dissipation_in_sea_water", "Epsilon", "W kg-1")
 end
 
-
-function addatt(fn, loc, sn, ln, u)
+function addatt(fn, loc, sn, ln, u, pos)
 ncwriteatt(fn, loc, "standard_name", sn)
 ncwriteatt(fn, loc, "long_name", ln)
 ncwriteatt(fn, loc, "units", u)
+if exist("pos", "var")
+    ncwriteatt(fn, loc, "positive", pos)
 end
-
-
+end
