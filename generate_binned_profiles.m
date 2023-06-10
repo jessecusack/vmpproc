@@ -77,15 +77,16 @@ zmax = ceil(zmax);
 
 for idx = 1:nFiles
     fprintf('Binning %i/%i\n', idx, nFiles)
+    file = pflFiles(idx);
 
-    saveName = sprintf("binned_%s.mat", pflFiles(idx).name(9:11));
-    saveFullFile = fullfile(pflFiles(idx).folder, saveName);
+    saveName = sprintf("binned_%s", extractAfter(file.name, "profile_"));
+    saveFullFile = fullfile(file.folder, saveName);
     if exist(saveFullFile, "file") && ~overwrite
         fprintf("%s already exists, skipping.\n", saveFullFile)
         continue
     end
 
-    pflFile = fullfile(pflFiles(idx).folder, pflFiles(idx).name);
+    pflFile = fullfile(file.folder, file.name);
     pfl = load(pflFile);
     bp = bin_profile(pfl, zmin, zmax, dz);
     save(saveFullFile, "-struct", "bp")

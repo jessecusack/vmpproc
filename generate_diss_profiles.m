@@ -38,6 +38,9 @@ function [] = generate_diss_profiles(pFile, saveDir, varargin)
 %     length as `lon` and `lat`. The fields may have length 1, or be a 
 %     series. mIn the latter case, coordinates are linearly interpolated 
 %     to profile time.
+% c_offset : number, optional 
+%     Offset applied to JAC conductivity prior to any calculations. A basic 
+%     method of calibration. Default is 0.0 mS cm-1. 
 %
 % First created by Jesse Cusack (jesse.cusack@oregonstate.edu) 2023-06-02.
 
@@ -48,15 +51,18 @@ lat_default = 45;
 iP = inputParser;
 iP.StructExpand = false;
 validText = @(x) isstring(x) || ischar(x);
+validNumber = @(x) isnumeric(x) && isscalar(x);
 addRequired(iP,'pFile', validText);
 addRequired(iP,'saveDir', validText);
 addParameter(iP,'info', get_info(), @isstruct);
 addParameter(iP, 'gps', struct('lon', lon_default, 'lat', lat_default, 'default', true), @isstruct)
+addParameter(iP, 'c_offset', 0, validNumber)
 parse(iP, pFile, saveDir, varargin{:}); 
 pFile = iP.Results.pFile;
 saveDir = iP.Results.saveDir;
 info = iP.Results.info;
 gps = iP.Results.gps;
+c_offset = iP.Results.c_offset;
 
 fprintf("\nP file: %s\n", pFile)
 
@@ -129,10 +135,15 @@ fprintf("\nSaving profiles to %s\n", savePath)
 info.fs_fast = p.fs_fast;
 info.fs_slow = p.fs_slow;
 
+% Offset conductivity
+p.JAC_C = p.JAC_C + c_offset;
+
 for idx = 1:nProfiles
     fprintf('Profile %i/%i\n', idx, nProfiles)
 
-    saveName = sprintf("profile_%03d.mat", idx);
+
+    dt = datestr(time_start(idx), "yyyymmddTHHMMSSZ");
+    saveName = sprintf("profile_%s.mat", dt);
     saveFullFile = fullfile(savePath, saveName);
 %     if exist(saveFullFile, "file") && ~info.overwrite
 %         fprintf("%s already exists, skipping.\n", saveName)
