@@ -30,6 +30,8 @@ end
 nz = length(bd.z);
 nt = length(bd.time_start);
 
+fprintf("Saving to %s\n", ncFile)
+
 % Create coordinates
 nccreate(ncFile, "z", "Dimensions", {"z" nz}, "Datatype", "single");
 nccreate(ncFile, "time", "Dimensions", {"time" nt})
