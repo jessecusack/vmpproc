@@ -63,11 +63,11 @@ for idx = 1:length(fns)
     if isscalar(bp.(fn))
         classifier(idx) = 0;
         ab.(fn) = NaN(1, nFiles);
-        fprintf("Initialising %s\n", fn)
+%         fprintf("Initialising %s\n", fn)
     elseif isvector(bp.(fn))
         classifier(idx) = 1;
         ab.(fn) = NaN(nBins, nFiles);
-        fprintf("Initialising %s\n", fn)
+%         fprintf("Initialising %s\n", fn)
     else
         fprintf("Variable %s is not scalar or vector and will not be joined.", fn)
         classifier = -1;

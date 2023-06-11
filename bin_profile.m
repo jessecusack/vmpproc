@@ -47,8 +47,12 @@ bp.depth = -bp.z;
 bp.sn = pfl.sn;
 bp.lon = pfl.lon;
 bp.lat = pfl.lat;
+bp.time = pfl.time_start;
 bp.time_start = pfl.time_start;
 bp.time_end = pfl.time_end;
+bp.dn = pfl.dn_start;
+bp.dn_start = pfl.dn_start;
+bp.dn_end = pfl.dn_end;
 
 % Removes NaN and errors later
 use_slow = (pfl.z_slow > zmin) & (pfl.z_slow < zmax);

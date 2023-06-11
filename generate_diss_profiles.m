@@ -105,15 +105,15 @@ for i = 1:nProfiles
     profileIdxSlow(2, i) = find(p.t_slow < p.t_fast(i2), 1, 'last');
 end
 
-time_start = p.filetime + p.t_slow(profileIdxSlow(1, :))/86400;
-time_end = p.filetime + p.t_slow(profileIdxSlow(2, :))/86400;
+dn_start = p.filetime + p.t_slow(profileIdxSlow(1, :))/86400;
+dn_end = p.filetime + p.t_slow(profileIdxSlow(2, :))/86400;
 
 % Check GPS
 [default_gps, interp_gps] = check_gps(gps);
 gps_overlap = true(nProfiles, 1);
 if interp_gps
     gps = clean_gps(gps);
-    gps_overlap = (gps.time(1) < time_start) & (gps.time(end) > time_start);
+    gps_overlap = (gps.time(1) < dn_start) & (gps.time(end) > dn_start);
     msg = sprintf("GPS times overlaps with %i of %i profiles.", sum(gps_overlap), nProfiles);
     if ~all(gps_overlap) && info.revert_to_default_gps
         warning(msg)
@@ -142,7 +142,7 @@ for idx = 1:nProfiles
     fprintf('Profile %i/%i\n', idx, nProfiles)
 
 
-    dt = datestr(time_start(idx), "yyyymmddTHHMMSSZ");
+    dt = datestr(dn_start(idx), "yyyymmddTHHMMSSZ");
     saveName = sprintf("profile_%s.mat", dt);
     saveFullFile = fullfile(savePath, saveName);
 %     if exist(saveFullFile, "file") && ~info.overwrite
@@ -151,7 +151,6 @@ for idx = 1:nProfiles
 %     end
 
     pfl = struct;
-    pfl.sn = sn;
     
     idx_start = profileIdxSlow(1, idx);
     idx_end = profileIdxSlow(2, idx);
@@ -166,13 +165,13 @@ for idx = 1:nProfiles
 
     idxs_fast = profileIdx(1, idx):profileIdx(2, idx);
 
-    pfl.time_start = time_start(idx);
-    pfl.time_end = time_end(idx);
+    pfl.dn_start = dn_start(idx);
+    pfl.dn_end = dn_end(idx);
     
     % attach GPS
     if interp_gps && gps_overlap(idx)
-        lon = interp1(gps.time, gps.lon, pfl.time_start);
-        lat = interp1(gps.time, gps.lat, pfl.time_start);
+        lon = interp1(gps.time, gps.lon, pfl.dn_start);
+        lat = interp1(gps.time, gps.lat, pfl.dn_start);
         pfl.lon = lon;
         pfl.lat = lat;
     elseif (interp_gps && ~gps_overlap(idx)) || default_gps
@@ -217,8 +216,13 @@ for idx = 1:nProfiles
     AA = [pfl.Ax_ds, pfl.Ay_ds]; 
     diss = get_diss_odas([pfl.sh1_hp, pfl.sh2_hp], AA, info);
 
-    % FILL STRUCTURE
-    % Slow variables
+    % FILL PROFILE STRUCTURE
+    % 0D variables
+    pfl.sn = sn;
+    pfl.time_start = (pfl.dn_start - datenum("1970-01-01"))*86400;  % posix time
+    pfl.time_end = (pfl.dn_end - datenum("1970-01-01"))*86400;
+
+    % SLOW variables
     pfl.P_slow = p.P_slow(idxs_slow);
     pfl.z_slow = gsw_z_from_p(pfl.P_slow, lat);
     pfl.T = p.JAC_T(idxs_slow);
@@ -231,6 +235,7 @@ for idx = 1:nProfiles
 
     pfl.t_slow = p.t_slow(idxs_slow);
     pfl.dn_slow = pfl.t_slow/86400 + p.filetime;
+    pfl.time_slow = pfl.t_slow - pfl.t_slow(1) + pfl.time_start;
     % Thermodynamics
     pfl.SA = gsw_SA_from_SP(pfl.SP, pfl.P_slow, lon, lat);
     pfl.CT = gsw_CT_from_t(pfl.SA, pfl.T, pfl.P_slow);
@@ -238,17 +243,18 @@ for idx = 1:nProfiles
 %     pfl.N2 = interp1(P_mid, N2, pfl.P_slow);
     pfl.rho0 = gsw_pot_rho_t_exact(pfl.SA, pfl.T, pfl.P_slow, 0);
 
-    % Epsilon
+    % DISS
     pfl.P_diss = diss.P;
     pfl.z_diss = gsw_z_from_p(pfl.P_diss, lat);
     pfl.eps1 = diss.e(1, :)';
     pfl.eps2 = diss.e(2, :)';
     
-    % fast variables
+    % FAST variables
     pfl.P_fast = info.P;
     pfl.z_fast = gsw_z_from_p(pfl.P_fast, lat);
     pfl.t_fast = info.t;
     pfl.dn_fast = pfl.t_fast/86400 + p.filetime;
+    pfl.time_fast = pfl.t_fast - pfl.t_fast(1) + pfl.time_start;
     pfl.T1_fast = p.T1_fast(idxs_fast);
     pfl.T2_fast = p.T2_fast(idxs_fast);
 
