@@ -43,6 +43,17 @@ nz = length(zbins) - 1;
 SZ = [nz, 1];
 bp.depth = -bp.z;
 
+% Check for chlorophyll and turbidity
+fns = fieldnames(pfl);
+has_chl = false;
+has_turb = false;
+if ismember("Chlorophyll", fns)
+    has_chl = true;
+end
+if ismember("Turbidity", fns)
+    has_turb = true;
+end
+
 % Unbinned quantities
 bp.sn = pfl.sn;
 bp.lon = pfl.lon;
@@ -56,12 +67,17 @@ bp.dn_end = pfl.dn_end;
 
 % Removes NaN and errors later
 use_slow = (pfl.z_slow > zmin) & (pfl.z_slow < zmax);
-use_diss = (pfl.z_diss > zmin) & (pfl.z_diss < zmax);
-
-% Do binning
 ib_slow = discretize(pfl.z_slow(use_slow), zbins);
+
+use_diss = (pfl.z_diss > zmin) & (pfl.z_diss < zmax);
 ib_diss = discretize(pfl.z_diss(use_diss), zbins);
 
+if has_chl || has_turb
+    use_fast = (pfl.z_fast > zmin) & (pfl.z_fast < zmax);
+    ib_fast = discretize(pfl.z_fast(use_fast), zbins);
+end
+
+% Do binning
 bp.p = accumarray(ib_slow, pfl.P_slow(use_slow), SZ, @mean, NaN);
 bp.C = accumarray(ib_slow, pfl.C(use_slow), SZ, @mean, NaN);
 bp.T = accumarray(ib_slow, pfl.T(use_slow), SZ, @mean, NaN);
@@ -72,5 +88,12 @@ bp.rho0 = accumarray(ib_slow, pfl.rho0(use_slow), SZ, @mean, NaN);
 
 bp.eps1 = accumarray(ib_diss, pfl.eps1(use_diss), SZ, @mean, NaN);
 bp.eps2 = accumarray(ib_diss, pfl.eps2(use_diss), SZ, @mean, NaN);
+
+if has_chl
+    bp.chl = accumarray(ib_fast, pfl.Chlorophyll(use_fast), SZ, @mean, NaN);
+end
+if has_turb
+    bp.turb = accumarray(ib_fast, pfl.Turbidity(use_fast), SZ, @mean, NaN);
+end
 
 end

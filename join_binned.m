@@ -32,22 +32,37 @@ end
 
 nFiles = length(bpFiles);
 bp = load(fullfile(bpFiles(1).folder, bpFiles(1).name));
-
 nBins = length(bp.z);
-fns = fieldnames(bp);
 
 starting_times = zeros(size(nFiles));
-starting_times(1) = bp.time_start;
+fns = {};
+fn_info = struct();
 
-for idx = 2:nFiles
+% Check number of bins in each file is equal and classify fields
+for idx = 1:nFiles
     filePath = fullfile(bpFiles(idx).folder, bpFiles(idx).name);
     bp = load(filePath);
-    starting_times(idx) = bp.time_start;
+
     if ~isequal(length(bp.z), nBins)
         error("Length of z in %s not equal to that in preceeding files.", filePath)
-    elseif ~isequal(fieldnames(bp), fns)
-        error("Variables in %s do not match those in preceeding files.", filePath)
     end
+
+    starting_times(idx) = bp.time_start;
+
+    % Classify dimensions of new fieldnames
+    new_fns = setdiff(fieldnames(bp), fns);
+    for jdx = 1:length(new_fns)
+        nfn = new_fns{jdx};
+        if isscalar(bp.(nfn))
+            fn_info.(nfn).class = 0;
+        elseif isvector(bp.(nfn))
+            fn_info.(nfn).class = 1;
+        else
+            error("Unclassifiable fieldname %s", nfn)
+        end
+    end
+
+    fns = union(fieldnames(bp), fns);
 end
 
 % Initialise joined
@@ -60,17 +75,13 @@ fns = fns(~strcmp(fns, 'z')); % This removes z from the list of fieldnames.
 classifier = zeros(size(fns));
 for idx = 1:length(fns)
     fn = fns{idx};
-    if isscalar(bp.(fn))
-        classifier(idx) = 0;
+    if fn_info.(fn).class == 0
         ab.(fn) = NaN(1, nFiles);
-%         fprintf("Initialising %s\n", fn)
-    elseif isvector(bp.(fn))
+    elseif fn_info.(fn).class == 1
         classifier(idx) = 1;
         ab.(fn) = NaN(nBins, nFiles);
-%         fprintf("Initialising %s\n", fn)
     else
         fprintf("Variable %s is not scalar or vector and will not be joined.", fn)
-        classifier = -1;
     end
 end
 
@@ -82,9 +93,12 @@ for idx = idxSort
     bp = load(bpFile);
     for jdx = 1:length(fns)
         fn = fns{jdx};
-        if classifier(jdx) == 0
+        if ~ismember(fn, fieldnames(bp))
+            continue
+        end
+        if fn_info.(fn).class == 0
             ab.(fn)(kdx) = bp.(fn);
-        elseif classifier(jdx) == 1
+        elseif fn_info.(fn).class == 1
             ab.(fn)(:, kdx) = bp.(fn);
         end
     end

@@ -1,35 +1,4 @@
 {
-  "time_fast": {
-    "standard_name": "time",
-    "long_name": "Time",
-    "units": "seconds since 1970-01-01"
-  },
-  "SP": {
-    "standard_name": "sea_water_practical_salinity",
-    "long_name": "Practical salinity",
-    "units": ""
-  },
-  "SA": {
-    "standard_name": "sea_water_absolute_salinity",
-    "long_name": "Absolute salinity",
-    "units": "g kg-1"
-  },
-  "CT": {
-    "standard_name": "sea_water_conservative_temperature",
-    "long_name": "Conservative temperature",
-    "units": "degree_C"
-  },
-  "rho0": {
-    "standard_name": "sea_water_potential_density",
-    "long_name": "Potential density",
-    "units": "kg m-3",
-    "reference_pressure": "0 dbar"
-  },
-  "eps1": {
-    "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
-    "long_name": "Epsilon",
-    "units": "W kg-1"
-  },
   "time": {
     "standard_name": "time",
     "long_name": "Time",
@@ -50,11 +19,10 @@
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
-  "sn": {
-    "long_name": "Serial number"
-  },
-  "cast": {
-    "long_name": "Cast number"
+  "time_fast": {
+    "standard_name": "time",
+    "long_name": "Time",
+    "units": "seconds since 1970-01-01"
   },
   "z": {
     "standard_name": "height",
@@ -80,15 +48,42 @@
     "units": "m",
     "positive": "down"
   },
+  "sn": {
+    "long_name": "Serial number"
+  },
+  "cast": {
+    "long_name": "Cast number"
+  },
+  "lon": {
+    "standard_name": "longitude",
+    "long_name": "Longitude",
+    "units": "degree_east"
+  },
   "lat": {
     "standard_name": "latitude",
     "long_name": "Latitude",
     "units": "degree_north"
   },
-  "eps2": {
-    "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
-    "long_name": "Epsilon",
-    "units": "W kg-1"
+  "SP": {
+    "standard_name": "sea_water_practical_salinity",
+    "long_name": "Practical salinity",
+    "units": ""
+  },
+  "SA": {
+    "standard_name": "sea_water_absolute_salinity",
+    "long_name": "Absolute salinity",
+    "units": "g kg-1"
+  },
+  "CT": {
+    "standard_name": "sea_water_conservative_temperature",
+    "long_name": "Conservative temperature",
+    "units": "degree_C"
+  },
+  "rho0": {
+    "standard_name": "sea_water_potential_density",
+    "long_name": "Potential density",
+    "units": "kg m-3",
+    "reference_pressure": "0 dbar"
   },
   "sh1_ds": {
     "long_name": "Shear",
@@ -132,11 +127,6 @@
     "units": "dbar",
     "positive": "down"
   },
-  "lon": {
-    "standard_name": "longitude",
-    "long_name": "Longitude",
-    "units": "degree_east"
-  },
   "T": {
     "standard_name": "sea_water_temperature",
     "long_name": "Temperature",
@@ -164,15 +154,25 @@
     "long_name": "Pressure",
     "units": "dbar",
     "positive": "down"
+  },  
+  "eps1": {
+    "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
+    "long_name": "Epsilon",
+    "units": "W kg-1"
   },
-  "sh1_ds": {
-    "long_name": "Shear",
-    "units": "s-1",
-    "comment": "despiked"
+  "eps2": {
+    "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
+    "long_name": "Epsilon",
+    "units": "W kg-1"
   },
-  "sh2_ds": {
-    "long_name": "Shear",
-    "units": "s-1",
-    "comment": "despiked"
+  "CHLOROPHYLL PLACEHOLDER CHANGE NAME TO chl TO ENABLE": {
+    "standard_name": "",
+    "long_name": "Chlorophyll",
+    "units": "ppb"
+  },
+  "TURBIDITY PLACEHOLDER CHANGE NAME TO turb TO ENABLE": {
+    "standard_name": "sea_water_turbitity",
+    "long_name": "Turbidity",
+    "units": ""
   }
 }

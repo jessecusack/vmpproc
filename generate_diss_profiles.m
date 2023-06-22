@@ -138,17 +138,23 @@ info.fs_slow = p.fs_slow;
 % Offset conductivity
 p.JAC_C = p.JAC_C + c_offset;
 
+% Check for chlorophyll and turbidity
+fns = fieldnames(p);
+has_chl = false;
+has_turb = false;
+if ismember("Chlorophyll", fns)
+    has_chl = true;
+end
+if ismember("Turbidity", fns)
+    has_turb = true;
+end
+
 for idx = 1:nProfiles
     fprintf('Profile %i/%i\n', idx, nProfiles)
-
 
     dt = datestr(dn_start(idx), "yyyymmddTHHMMSSZ");
     saveName = sprintf("profile_%s.mat", dt);
     saveFullFile = fullfile(savePath, saveName);
-%     if exist(saveFullFile, "file") && ~info.overwrite
-%         fprintf("%s already exists, skipping.\n", saveName)
-%         continue
-%     end
 
     pfl = struct;
     
@@ -257,6 +263,13 @@ for idx = 1:nProfiles
     pfl.time_fast = pfl.t_fast - pfl.t_fast(1) + pfl.time_start;
     pfl.T1_fast = p.T1_fast(idxs_fast);
     pfl.T2_fast = p.T2_fast(idxs_fast);
+
+    if has_chl
+        pfl.Chlorophyll = p.Chlorophyll(idxs_fast);
+    end
+    if has_turb
+        pfl.Turbidity = p.Turbidity(idxs_fast);
+    end
 
     % SAVE
     fprintf("Saving to %s\n", saveFullFile)
