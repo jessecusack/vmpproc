@@ -11,10 +11,14 @@ function profile_to_netcdf(pflFile, varargin)
 % overwrite : [true false], optional
 %    If true, overwrite existing netcdf file. Default is false.
 % attrFile : text, optional
-%    JSON file containing the mapping from variable name to CF attributes.
-%    The `var_CF_attrs.json` file in this package is used by default.
+%    JSON file containing the mapping from variable name to attributes.
+%    The `nc_attrs.json` file in this package is used by default.
+% CF_attr_names : cell array of character vectors, optional
+%    List of valid CF attributes used to check against attributes in attrFile.
+
 
 default_ncFile = "DFN@)(fd90j23rfds{>{P>[13e";  % Some unlikely name...
+default_CF_attr_names = {'standard_name', 'long_name', 'units', 'positive', 'comment'};
 
 % Parse arguments
 iP = inputParser;
@@ -22,11 +26,13 @@ validText = @(x) isstring(x) || ischar(x);
 addRequired(iP,'pflFile', validText);
 addParameter(iP,'ncFile', default_ncFile, validText);
 addParameter(iP,'overwrite', false, @islogical);
-addParameter(iP,'attrFile', "var_CF_attrs.json", validText);
+addParameter(iP,'attrFile', "nc_attrs.json", validText);
+addParameter(iP,'CF_attr_names', default_CF_attr_names, @iscell);
 parse(iP, pflFile, varargin{:});
 ncFile = iP.Results.ncFile;
 overwrite = iP.Results.overwrite;
 attrFile = iP.Results.attrFile;
+CF_attr_names = iP.Results.CF_attr_names;
 
 [path, name, ~] = fileparts(pflFile);
 
@@ -36,66 +42,77 @@ end
 
 if exist(ncFile, "file") && ~overwrite
     error("%s exists and overwrite is false.", ncFile)
+elseif overwrite
+    ncid = netcdf.create(ncFile, 'CLOBBER');
 else
-    pfl = load(pflFile);
-    if exist(ncFile, "file")
-        delete(ncFile)
-    end
+    ncid = netcdf.create(ncFile, 'NOCLOBBER');
 end
 
+% Open attribute file
+attrs = jsondecode(fileread(attrFile));
+afns = fieldnames(attrs);
+
+% Load profile and get data sizes
+pfl = load(pflFile);
 nts = length(pfl.time_slow);
 ntf = length(pfl.time_fast);
 npd = length(pfl.P_diss);
 
-attrs = jsondecode(fileread(attrFile));
-afns = fieldnames(attrs);
+% Figure out which variables are good to save from the attribute
+% definitions
+pfl_fns = fieldnames(pfl);
+is_defined = ismember(pfl_fns, afns);
+bfns = pfl_fns(is_defined);  % Variable names to bin
+nf = length(bfns);
 
-fprintf("Saving to %s\n", ncFile)
+% Define netcdf dimensions
+ds = netcdf.defDim(ncid, 'time_slow', nts);
+df = netcdf.defDim(ncid, 'time_fast', ntf);
+dd = netcdf.defDim(ncid, 'P_diss', npd);
 
-bfns = fieldnames(pfl);
-
-for i = 1:length(bfns)
+% Define netcdf variables
+varids = zeros(nf, 1);
+for i = 1:nf
     fn = bfns{i};
-    if ~ismember(fn, afns)
-%         fprintf("Skipping variable %s because not in attribute file.\n", fn)
-        continue
-    end
-
-    dat = pfl.(fn);
-    vn = numel(dat);
+    vn = numel(pfl.(fn));
 
     % Create variable
-    if vn == 1  % 0D variable
-        nccreate(ncFile, fn) % , "Dimensions", {"profile" 1}
+    if vn == 1 
+        varids(i) = netcdf.defVar(ncid, fn, attrs.(fn).dtype, []);
     elseif vn == nts  % 1D time slow
-        nccreate(ncFile, fn, "Dimensions", {"time_slow" nts})% "profile" 1})
+        varids(i) = netcdf.defVar(ncid, fn, attrs.(fn).dtype, ds);
     elseif vn == ntf  % 1D time fast
-        nccreate(ncFile, fn, "Dimensions", {"time_fast" ntf})% "profile" 1})
+        varids(i) = netcdf.defVar(ncid, fn, attrs.(fn).dtype, df);
     elseif vn == npd  % 1D pressure diss
-        nccreate(ncFile, fn, "Dimensions", {"P_diss" npd})% "profile" 1})
+        varids(i) = netcdf.defVar(ncid, fn, attrs.(fn).dtype, dd);
     else
         error("%s does not fit the time and space dimensions", fn)
     end
-
 end
 
-for i = 1:length(bfns)
+% End define state and input data
+netcdf.endDef(ncid)
+
+for i = 1:nf
     fn = bfns{i};
-    if ~ismember(fn, afns)
-%         fprintf("Skipping variable %s because not in attribute file.\n", fn)
-        continue
-    end
-
-    % Write data
-    ncwrite(ncFile,  pfl.(fn), dat);
-    
-    % Add attributes
-    cfns = fieldnames(attrs.(fn));
-    for j = 1:length(cfns)
-        cfn = cfns{j};
-        ncwriteatt(ncFile, fn, cfn, attrs.(fn).(cfn))
-    end
-
+    netcdf.putVar(ncid, varids(i), pfl.(fn))
 end
+
+% Reopen define and add attributes
+netcdf.reDef(ncid)
+
+for i = 1:nf
+    fn = bfns{i};
+    afns = fieldnames(attrs.(fn)); % all available fields
+    is_defined = ismember(afns, CF_attr_names);
+    cffns = afns(is_defined); % those fields allowed
+    for j = 1:length(cffns)
+        cfn = cffns{j};
+        netcdf.putAtt(ncid, varids(i), cfn, attrs.(fn).(cfn))
+    end
+end
+
+fprintf("Saving to %s\n", ncFile)
+netcdf.close(ncid)
 
 end
