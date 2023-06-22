@@ -1,176 +1,222 @@
 {
   "time": {
+    "dtype": "NC_FLOAT",
     "standard_name": "time",
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
   "time_start": {
+    "dtype": "NC_FLOAT",
     "standard_name": "time",
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
   "time_end": {
+    "dtype": "NC_FLOAT",
     "standard_name": "time",
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
   "time_slow": {
+    "dtype": "NC_FLOAT",
     "standard_name": "time",
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
   "time_fast": {
+    "dtype": "NC_FLOAT",
     "standard_name": "time",
     "long_name": "Time",
     "units": "seconds since 1970-01-01"
   },
   "z": {
+    "dtype": "NC_FLOAT",
     "standard_name": "height",
     "long_name": "Height",
     "units": "m",
     "positive": "up"
   },
   "z_slow": {
+    "dtype": "NC_FLOAT",
     "standard_name": "height",
     "long_name": "Height",
     "units": "m",
     "positive": "up"
   },
   "z_diss": {
+    "dtype": "NC_FLOAT",
     "standard_name": "height",
     "long_name": "Height",
     "units": "m",
     "positive": "up"
   },
   "depth": {
+    "dtype": "NC_FLOAT",
     "standard_name": "depth",
     "long_name": "Depth",
     "units": "m",
     "positive": "down"
   },
   "sn": {
+    "dtype": "NC_INT",
     "long_name": "Serial number"
   },
   "cast": {
+    "dtype": "NC_INT",
     "long_name": "Cast number"
   },
   "lon": {
+    "dtype": "NC_FLOAT",
     "standard_name": "longitude",
     "long_name": "Longitude",
     "units": "degree_east"
   },
   "lat": {
+    "dtype": "NC_FLOAT",
     "standard_name": "latitude",
     "long_name": "Latitude",
     "units": "degree_north"
   },
   "SP": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_practical_salinity",
     "long_name": "Practical salinity",
     "units": ""
   },
   "SA": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_absolute_salinity",
     "long_name": "Absolute salinity",
     "units": "g kg-1"
   },
   "CT": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_conservative_temperature",
     "long_name": "Conservative temperature",
     "units": "degree_C"
   },
   "rho0": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_potential_density",
     "long_name": "Potential density",
     "units": "kg m-3",
     "reference_pressure": "0 dbar"
   },
   "sh1_ds": {
+    "dtype": "NC_FLOAT",
     "long_name": "Shear",
     "units": "s-1",
     "comment": "despiked"
   },
   "sh2_ds": {
+    "dtype": "NC_FLOAT",
     "long_name": "Shear",
     "units": "s-1",
     "comment": "despiked"
   },
   "Ax_ds": {
+    "dtype": "NC_FLOAT",
     "long_name": "Acceleration",
     "units": "m s-2",
     "comment": "despiked"
   },
   "Ay_ds": {
+    "dtype": "NC_FLOAT",
     "long_name": "Acceleration",
     "units": "m s-2",
     "comment": "despiked"
   },
   "T1_fast": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_temperature",
     "long_name": "Temperature",
     "units": "degree_C"
   },
   "T2_fast": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_temperature",
     "long_name": "Temperature",
     "units": "degree_C"
   },
   "z_fast": {
+    "dtype": "NC_FLOAT",
     "standard_name": "height",
     "long_name": "Height",
     "units": "m",
     "positive": "up"
   },
   "P_fast": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_pressure",
     "long_name": "Pressure",
     "units": "dbar",
     "positive": "down"
   },
   "T": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_temperature",
     "long_name": "Temperature",
     "units": "degree_C"
   },
   "C": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_conductivity",
     "long_name": "Conductivity",
     "units": "mS cm-1"
   },
   "p": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_pressure",
     "long_name": "Pressure",
     "units": "dbar",
     "positive": "down"
   },
   "P_slow": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_pressure",
     "long_name": "Pressure",
     "units": "dbar",
     "positive": "down"
   },
   "P_diss": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_pressure",
     "long_name": "Pressure",
     "units": "dbar",
     "positive": "down"
   },  
   "eps1": {
+    "dtype": "NC_DOUBLE",
     "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
     "long_name": "Epsilon",
     "units": "W kg-1"
   },
   "eps2": {
+    "dtype": "NC_DOUBLE",
     "standard_name": "specific_turbulent_kinetic_energy_dissipation_in_sea_water",
     "long_name": "Epsilon",
     "units": "W kg-1"
   },
-  "CHLOROPHYLL PLACEHOLDER CHANGE NAME TO chl TO ENABLE": {
+  "chl": {
+    "dtype": "NC_FLOAT",
     "standard_name": "",
     "long_name": "Chlorophyll",
     "units": "ppb"
   },
-  "TURBIDITY PLACEHOLDER CHANGE NAME TO turb TO ENABLE": {
+  "turb": {
+    "dtype": "NC_FLOAT",
+    "standard_name": "sea_water_turbitity",
+    "long_name": "Turbidity",
+    "units": ""
+  },
+  "Chlorophyll": {
+    "dtype": "NC_FLOAT",
+    "standard_name": "",
+    "long_name": "Chlorophyll",
+    "units": "ppb"
+  },
+  "Turbidity": {
+    "dtype": "NC_FLOAT",
     "standard_name": "sea_water_turbitity",
     "long_name": "Turbidity",
     "units": ""
