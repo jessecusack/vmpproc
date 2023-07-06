@@ -74,6 +74,8 @@ end
 
 zmin = floor(zmin);
 zmax = ceil(zmax);
+fprintf("zmax = %1.1f\n", zmax)
+fprintf("zmin = %1.1f\n", zmin)
 
 for idx = 1:nFiles
     fprintf('Binning %i/%i\n', idx, nFiles)

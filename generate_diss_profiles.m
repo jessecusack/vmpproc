@@ -85,7 +85,7 @@ if ~exist(matFile, "file")
 end
 
 % Extract serial number from setup file
-sn = str2double(regexp(p.setupfilestr, '(?<=sn\s*=[^0-9]*)[0-9]*\.?[0-9]+', 'match'));
+sn = str2double(regexp(p.setupfilestr, '(?<=sn\s*=[^0-9]*)[0-9]*\.?[0-9]+', 'match', 'once'));
 
 % Find profiles
 profileIdx = get_profile(p.P_fast, p.W_fast, info.pMin, info.wMin, ...
